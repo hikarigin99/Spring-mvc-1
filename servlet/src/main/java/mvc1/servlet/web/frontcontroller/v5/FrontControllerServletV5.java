@@ -2,11 +2,14 @@ package mvc1.servlet.web.frontcontroller.v5;
 
 import mvc1.servlet.web.frontcontroller.ModelView;
 import mvc1.servlet.web.frontcontroller.MyView;
-import mvc1.servlet.web.frontcontroller.v3.ControllerV3;
 import mvc1.servlet.web.frontcontroller.v3.controller.MemberFormControllerV3;
 import mvc1.servlet.web.frontcontroller.v3.controller.MemberListControllerV3;
 import mvc1.servlet.web.frontcontroller.v3.controller.MemberSaveControllerV3;
+import mvc1.servlet.web.frontcontroller.v4.controller.MemberFormControllerV4;
+import mvc1.servlet.web.frontcontroller.v4.controller.MemberListControllerV4;
+import mvc1.servlet.web.frontcontroller.v4.controller.MemberSaveControllerV4;
 import mvc1.servlet.web.frontcontroller.v5.adapter.ControllerV3HandlerAdapter;
+import mvc1.servlet.web.frontcontroller.v5.adapter.ControllerV4HandlerAdapter;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -35,17 +38,24 @@ public class FrontControllerServletV5 extends HttpServlet {
         handlerMappingMap.put("/front-controller/v5/v3/members/new-form", new MemberFormControllerV3());
         handlerMappingMap.put("/front-controller/v5/v3/members/save", new MemberSaveControllerV3());
         handlerMappingMap.put("/front-controller/v5/v3/members", new MemberListControllerV3());
+
+        // v4 추가
+        handlerMappingMap.put("/front-controller/v5/v4/members/new-form", new MemberFormControllerV4());
+        handlerMappingMap.put("/front-controller/v5/v4/members/save", new MemberSaveControllerV4());
+        handlerMappingMap.put("/front-controller/v5/v4/members", new MemberListControllerV4());
     }
 
     private void initHandlerAdapters() {
         handlerAdapters.add(new ControllerV3HandlerAdapter());
+        handlerAdapters.add(new ControllerV4HandlerAdapter());
+
     }
 
     @Override
     protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
         // handler 찾아오는 메서드
-        Object handler = getHandler(request);                       //MemberFormControllerV3
+        Object handler = getHandler(request);                       //MemberFormControllerV4
 
         if(handler == null) {
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
@@ -53,9 +63,9 @@ public class FrontControllerServletV5 extends HttpServlet {
         }
 
         // handler Adapter 찾아오는 메서드
-        MyHandlerAdapter adapter = getHandlerAdapter(handler);      //ControllerV3HandlerAdapter
+        MyHandlerAdapter adapter = getHandlerAdapter(handler);      //ControllerV4HandlerAdapter
 
-        ModelView mv = adapter.handle(request, response, handler);  //MemberFormControllerV3
+        ModelView mv = adapter.handle(request, response, handler);  //MemberFormControllerV4
 
         String viewName = mv.getViewName(); // 논리이름 new-form
         MyView view = viewResolver(viewName);
@@ -68,10 +78,10 @@ public class FrontControllerServletV5 extends HttpServlet {
         return handlerMappingMap.get(requestURI);
     }
 
-    private MyHandlerAdapter getHandlerAdapter(Object handler) {    //MemberFormControllerV3
-        for (MyHandlerAdapter adapter : handlerAdapters) {          //ControllerV3HandlerAdapter
+    private MyHandlerAdapter getHandlerAdapter(Object handler) {    //MemberFormControllerV4
+        for (MyHandlerAdapter adapter : handlerAdapters) {          //ControllerV3HandlerAdapter, ControllerV4HandlerAdapter
             if(adapter.support(handler)) {
-                return adapter;
+                return adapter;                                     // ControllerV4HandlerAdapter
             }
         }
         throw new IllegalArgumentException("handler adapter를 찾을 수 없습니다. handler = " + handler);
